@@ -285,8 +285,11 @@ CREATE OR REPLACE PACKAGE BODY PKG_ADMINISTRADOR AS
   PKG_SOLICITUDES_CORE.validar_administrador(p_id_administrador);
   comprobar_plazo(p_convocatoria,'AUTORIZAR');
   IF p_monto IS NULL OR p_monto<0 THEN RAISE_APPLICATION_ERROR(-20886,'Monto invalido'); END IF;
-  UPDATE Convocatorias_TipoSolicitudes SET monto_deduccion=p_monto
-   WHERE id_convocatoria=p_convocatoria AND id_tipo_solicitud=p_tipo;
+  UPDATE Convocatorias_TipoSolicitudes
+     SET monto_deduccion = p_monto,
+         fecha_asignacion_montos = SYSDATE
+   WHERE id_convocatoria = p_convocatoria
+     AND id_tipo_solicitud = p_tipo;
   IF SQL%ROWCOUNT<>1 THEN RAISE_APPLICATION_ERROR(-20887,'Tipo no configurado en convocatoria'); END IF;
  EXCEPTION WHEN OTHERS THEN ROLLBACK TO sp_monto; RAISE;
  END;
