@@ -23,6 +23,9 @@ const Http = {
   csrfToken: null,
 
   async get(endpoint) {
+    if (window.ITTSecurity) {
+      return window.ITTSecurity.json(Config.apiBase + endpoint, { method: 'GET' });
+    }
     const resp = await fetch(Config.apiBase + endpoint, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -40,11 +43,16 @@ const Http = {
   },
 
   async post(endpoint, body) {
-    const headers = { 'Content-Type': 'application/json' };
-    if (endpoint === '/auth/login' || endpoint === '/auth/logout') {
-      if (!this.csrfToken) throw new Error('Recargue la página para renovar la sesión.');
-      headers['X-CSRF-TOKEN'] = this.csrfToken;
+    if (window.ITTSecurity) {
+      return window.ITTSecurity.json(Config.apiBase + endpoint, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
     }
+    const headers = { 'Content-Type': 'application/json' };
+    if (!this.csrfToken) await this.authSession();
+    if (!this.csrfToken) throw new Error('Recargue la página para renovar la sesión.');
+    headers['X-CSRF-TOKEN'] = this.csrfToken;
     const resp = await fetch(Config.apiBase + endpoint, {
       method: 'POST',
       headers,
@@ -79,6 +87,12 @@ const Http = {
   },
 
   async put(endpoint, body) {
+    if (window.ITTSecurity) {
+      return window.ITTSecurity.json(Config.apiBase + endpoint, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+    }
     const headers = { 'Content-Type': 'application/json' };
     if (!this.csrfToken) throw new Error('Recargue la página para renovar la sesión.');
     headers['X-CSRF-TOKEN'] = this.csrfToken;
@@ -102,6 +116,10 @@ const Http = {
 
 const AuthSession = {
   async requireRole(expectedRole, loginPath, otherProfileLoginPath) {
+    if (window.ITTSecurity) {
+      const session = await window.ITTSecurity.protegerPagina(expectedRole, { login: loginPath });
+      return Boolean(session);
+    }
     try {
       const session = await Http.authSession();
       if (!session.authenticated) {

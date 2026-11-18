@@ -28,6 +28,11 @@ const Http = {
    * @returns {Promise<any>}   - JSON parseado
    */
   async get(endpoint) {
+    if (window.ITTSecurity) {
+      const data = await window.ITTSecurity.json(Config.apiBase + endpoint, { method: 'GET' });
+      if (data?.csrfToken) this.csrfToken = data.csrfToken;
+      return data;
+    }
     const resp = await fetch(Config.apiBase + endpoint, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
@@ -50,6 +55,14 @@ const Http = {
    * @param {object} body
    */
   async post(endpoint, body) {
+    if (window.ITTSecurity) {
+      const data = await window.ITTSecurity.json(Config.apiBase + endpoint, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      if (data?.csrfToken) this.csrfToken = data.csrfToken;
+      return data;
+    }
     const headers = { 'Content-Type': 'application/json' };
     // Equipo 1: toda operación que modifica datos lleva el token CSRF.
     if (!this.csrfToken) await this.authSession();
@@ -92,8 +105,17 @@ const Http = {
    * Realiza una petición PUT con body JSON.
    */
   async put(endpoint, body) {
+    if (window.ITTSecurity) {
+      const data = await window.ITTSecurity.json(Config.apiBase + endpoint, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+      if (data?.csrfToken) this.csrfToken = data.csrfToken;
+      return data;
+    }
     // Equipo 1: toda operación que modifica datos lleva el token CSRF.
     if (!this.csrfToken) await this.authSession();
+    if (!this.csrfToken) throw new Error('Recargue la página para renovar la sesión.');
     const resp = await fetch(Config.apiBase + endpoint, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': this.csrfToken || '' },
@@ -117,6 +139,10 @@ const AuthSession = {
   },
 
   async requireRole(expectedRole, loginPath) {
+    if (window.ITTSecurity) {
+      const session = await window.ITTSecurity.protegerPagina(expectedRole, { login: loginPath });
+      return Boolean(session);
+    }
     try {
       const session = await Http.authSession();
       if (!session.authenticated) {
@@ -752,8 +778,6 @@ const PanelAspirante = {
 
     try {
       const session = await Http.authSession();
-      const nav = document.getElementById('nombre-usuario-nav');
-      if (nav) nav.textContent = session.identity || 'Aspirante';
       this.setTexto('aspirante-ficha', session.identity);
       this.setTexto('aspirante-periodo', session.periodo);
       this.setTexto('aspirante-anio', session.anio);

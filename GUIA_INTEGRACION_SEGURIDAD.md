@@ -169,6 +169,8 @@ Dibuja una barra con el menú «Vistas» (las pantallas del rol en sesión), la 
 ITTSecurity.Navegacion.registrar('ADMIN', { titulo: 'Convocatorias', href: '/administrativo/convocatorias.html' });
 ```
 
+La barra compartida y la protección de sesión ya están integradas en los paneles de estudiante, aspirante y administrador, y en el formulario de estudiante. Los envoltorios HTTP de ambos módulos usan `ITTSecurity` para las peticiones `GET`, `POST` y `PUT`; así se centralizan CSRF, reintento del token y avisos de autorización. El menú de aspirante solo ofrece su panel mientras no exista un formulario propio para ese perfil.
+
 ### Captcha
 
 ```html

@@ -303,7 +303,6 @@
       ],
       APPLICANT: [
         { titulo: 'Panel de aspirante', href: '/solicitante/panel-aspirante.html' },
-        { titulo: 'Nueva solicitud', href: '/solicitante/formulario.html' },
       ],
       ADMIN: [
         { titulo: 'Panel administrativo', href: '/administrativo/panel-admin.html' },
